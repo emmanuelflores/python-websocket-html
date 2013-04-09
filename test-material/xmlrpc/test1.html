@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- <meta charset="utf-8"> -->
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Testint GUI</title>
+		<style>
+			body {
+				margin: 0;
+			}
+
+			svg {
+				font: 10px sans-serif;
+			}
+
+			.line {
+				fill: none;
+				stroke: #82949c;
+				stroke-width: 1.5px;
+				shape-rendering: crispEdges;
+			}
+
+			.axis path, .axis line {
+				fill: none;
+				stroke: #b01717;
+				shape-rendering: crispEdges;
+			}
+
+			#viz {
+				width: 90%;
+				height: 90%;
+			}
+
+		</style>
+
+		<link href='src/DAT/GUI/GUI.css' media='screen' rel='stylesheet' type='text/css'/>
+		<script type='text/javascript' src='src/DAT/GUI/GUI.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/ControllerNumberSlider.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/Controller.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/ControllerBoolean.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/ControllerString.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/ControllerFunction.js'></script>
+		<script type='text/javascript' src='src/DAT/GUI/ControllerNumber.js'></script>
+		<script src="mimic.js"></script>
+	</head>
+	<body>
+		<!-- <script src="http://mbostock.github.com/d3/d3.js?2.7.2"></script> -->
+		<div id="header">
+			<h2>Power Sleep Plotting</h2>
+		</div>
+		<script src="d3/d3.v3.js"></script>
+		<!-- <div id="viz">
+
+		</div> -->
+		<script>
+			var vizSVG = d3.select("#viz").append("svg:svg").attr("width", "100%").attr("height", "100%").attr("viewBox", "0 0 800 600");
+
+			var n = 40, random = d3.random.normal(0, .2), data = d3.range(n).map(random);
+
+			var margin = {
+				top : 10,
+				right : 10,
+				bottom : 20,
+				left : 40
+			}, width = 800 - margin.left - margin.right, height = 300 - margin.top - margin.bottom;
+			//height = 200
+			//960 width
+			var x = d3.scale.linear().domain([0, n - 1]).range([0, width]);
+
+			var y = d3.scale.linear().domain([-1, 1]).range([height, 0]);
+
+			var color = d3.scale.category10();
+
+			var line = d3.svg.line().x(function(d, i) {
+				return x(i);
+			}).y(function(d, i) {
+				return y(d);
+			});
+
+			var svg = d3.select("body").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			svg.append("defs").append("clipPath").attr("id", "clip").append("rect").attr("width", width).attr("height", height);
+
+			svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(d3.svg.axis().scale(x).orient("bottom"));
+
+			svg.append("g").attr("class", "y axis").call(d3.svg.axis().scale(y).orient("left"));
+			//append paths
+			var path = svg.append("g").attr("clip-path", "url(#clip)").append("path").data([data]).attr("class", "line").attr("d", line);
+
+			tick();
+
+			function tick() {
+
+				//var method = document.getElementById("operation").value;
+				var request = new XmlRpcRequest("localhost:8000", "helloStefan");
+				//request.addParam(document.getElementById("n1").value);
+				//request.addParam(document.getElementById("n2").value);
+				//request.addParam("helloStefan");
+				var response = request.send();
+				alert(response.parseXML());
+
+				// push a new data point onto the back
+				var radomSet = random();
+				data.push(radomSet);
+				//printValue(radomSet);
+
+				// redraw the line, and slide it to the left
+				path.attr("d", line).attr("transform", null).transition().duration(window.duration).ease("linear").attr("transform", "translate(" + x(-1) + ")").each("end", tick);
+
+				// pop the old data point off the front
+				data.shift();
+
+			}
+
+			function printValue(value) {
+				console.log(value);
+			}
+
+			var gui = new DAT.GUI();
+			window.duration = 500;
+			gui.add(window, 'duration', 10, 1000);
+
+		</script>
+</html>
